@@ -19,7 +19,7 @@ import favoriteRoutes from './routes/favoriteRoutes.js'; // Importez les routes 
 import cloudinary from 'cloudinary';
 
 const app = express();
-
+app.set('trust proxy', 1);
 // Configuration Cloudinary
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
