@@ -1,7 +1,4 @@
-// backend/server.js
 
-// CHARGEZ LES VARIABLES D'ENVIRONNEMENT EN PREMIER !
-// C'est CRUCIAL que ces lignes soient au tout début du fichier.
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -18,8 +15,12 @@ import testDriveRoutes from './routes/testDriveRoutes.js';
 import favoriteRoutes from './routes/favoriteRoutes.js'; // Importez les routes des favoris
 import cloudinary from 'cloudinary';
 
+// Port du serveur
+const PORT = process.env.PORT || 5000;
+
 const app = express();
 app.set('trust proxy', 1);
+
 // Configuration Cloudinary
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -29,9 +30,16 @@ cloudinary.v2.config({
 });
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', 
+  origin: [
+    'https://vroumauto-frontend.onrender.com', // Votre frontend en production
+    'http://localhost:5173', // Vite en développement
+    'http://localhost:5000', // Au cas où vous testez localement
+    process.env.FRONTEND_URL // Variable d'environnement si définie
+  ].filter(Boolean), // Supprime les valeurs undefined
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 // Connexion à la base de données
 connectDB();
@@ -47,10 +55,10 @@ app.use(helmet());
 // Limiteur de taux de requêtes
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limite chaque IP à 100 requêtes par windowMs
+  max: 100, 
   message: JSON.stringify({ success: false, msg: 'Trop de requêtes depuis cette IP, veuillez réessayer après 15 minutes.' }), // Message JSON
-  statusCode: 429, // Too Many Requests
-  headers: true, // Inclure les en-têtes X-RateLimit-*
+  statusCode: 429, 
+  headers: true, 
 });
 app.use(limiter);
 
@@ -124,8 +132,7 @@ app.use((err, req, res, next) => {
 });
 
 
-// Port du serveur
-const PORT = process.env.PORT || 5000;
+
 
 // Démarrer le serveur
 const server = app.listen(
