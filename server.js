@@ -29,18 +29,27 @@ cloudinary.v2.config({
   secure: true
 });
 
+const allowedOrigins = [
+  'https://vroumauto.com',
+  'https://vroumauto-frontend.onrender.com',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 const corsOptions = {
-  origin: [
-    'https://vroumauto-frontend.onrender.com', // Votre frontend en production
-    'http://localhost:5173', // Vite en développement
-    'http://localhost:5000', // Au cas où vous testez localement
-    process.env.FRONTEND_URL // Variable d'environnement si définie
-  ].filter(Boolean), // Supprime les valeurs undefined
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS bloqué pour l'origine : ${origin}`));
+    }
+  },
   credentials: true,
-  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
+
 // Connexion à la base de données
 connectDB();
 
